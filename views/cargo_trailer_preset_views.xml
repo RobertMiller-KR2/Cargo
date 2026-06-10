@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_cargo_trailer_preset_list" model="ir.ui.view">
+        <field name="name">cargo.architect.trailer.preset.list</field>
+        <field name="model">cargo.architect.trailer.preset</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="length_in"/>
+                <field name="width_in"/>
+                <field name="height_in"/>
+                <field name="max_payload_lbs"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_cargo_trailer_preset_form" model="ir.ui.view">
+        <field name="name">cargo.architect.trailer.preset.form</field>
+        <field name="model">cargo.architect.trailer.preset</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="active"/>
+                    </group>
+                    <group string="Interior Dimensions">
+                        <field name="length_in"/>
+                        <field name="width_in"/>
+                        <field name="height_in"/>
+                        <field name="max_payload_lbs"/>
+                    </group>
+                    <group string="Axle Model">
+                        <field name="fifth_wheel_position_in"/>
+                        <field name="trailer_axle_position_in"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_cargo_architect" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.cargo.architect</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app data-string="Cargo Architect" string="Cargo Architect" name="cargo_architect">
+                    <block title="Report Company Information" name="ca_report_company_info">
+                        <setting string="Company Logo" help="Show the company logo in Cargo Architect load reports.">
+                            <field name="ca_report_show_company_logo"/>
+                        </setting>
+                        <setting string="Company Name" help="Show the company name in Cargo Architect load reports.">
+                            <field name="ca_report_show_company_name"/>
+                        </setting>
+                        <setting string="Company Address" help="Show the company address in Cargo Architect load reports.">
+                            <field name="ca_report_show_company_address"/>
+                        </setting>
+                    </block>
+                    <block title="Load Report Sections" name="ca_report_sections">
+                        <setting string="Load Quality Score">
+                            <field name="ca_report_show_quality_score"/>
+                        </setting>
+                        <setting string="Weight Heat Map">
+                            <field name="ca_report_show_weight_heat_map"/>
+                        </setting>
+                        <setting string="Weight Distribution">
+                            <field name="ca_report_show_weight_distribution"/>
+                        </setting>
+                        <setting string="Axle Analysis">
+                            <field name="ca_report_show_axle_analysis"/>
+                        </setting>
+                        <setting string="Engineering Analysis">
+                            <field name="ca_report_show_engineering_analysis"/>
+                        </setting>
+                        <setting string="Additional Capacity">
+                            <field name="ca_report_show_additional_capacity"/>
+                        </setting>
+                        <setting string="Layout Diagrams">
+                            <field name="ca_report_show_layout_diagrams"/>
+                        </setting>
+                        <setting string="Loading Instructions">
+                            <field name="ca_report_show_loading_instructions"/>
+                        </setting>
+                        <setting string="Load Sequence">
+                            <field name="ca_report_show_load_sequence"/>
+                        </setting>
+                        <setting string="Unload Sequence">
+                            <field name="ca_report_show_unload_sequence"/>
+                        </setting>
+                        <setting string="Forklift Accessibility">
+                            <field name="ca_report_show_forklift_accessibility"/>
+                        </setting>
+                        <setting string="QR Load Passport">
+                            <field name="ca_report_show_qr_passport"/>
+                        </setting>
+                        <setting string="Business Intelligence" help="Show cost savings, trailer selection, and carbon footprint analysis on the load report.">
+                            <field name="ca_report_show_business_intelligence"/>
+                        </setting>
+                        <setting string="Show Technical Coordinates" help="Show raw X/Y/Z coordinates on reports. Default is off; reports normally show trailer zone, stack level, and position reference instead.">
+                            <field name="ca_report_show_technical_coordinates"/>
+                        </setting>
+                    </block>
+                    <block title="Report Layout" name="ca_report_layout">
+                        <setting string="Footer On Every Page" help="Show the Cargo Architect footer with page number, date, and report version.">
+                            <field name="ca_report_show_footer"/>
+                        </setting>
+                        <setting string="Tax ID / VAT" help="Tax ID/VAT is intentionally never shown on Cargo Architect load reports.">
+                            <div class="text-muted">Always hidden</div>
+                        </setting>
+                    </block>
+                </app>
+            </xpath>
+        </field>
+    </record>
+</odoo>

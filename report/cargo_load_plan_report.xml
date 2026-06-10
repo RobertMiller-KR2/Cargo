@@ -1,0 +1,656 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="paperformat_cargo_load_plan_letter_standard" model="report.paperformat">
+        <field name="name">Cargo Architect Letter Landscape - Header/Footer Reserved</field>
+        <field name="default" eval="False"/>
+        <field name="format">Letter</field>
+        <field name="orientation">Landscape</field>
+        <field name="margin_top">55</field>
+        <field name="margin_bottom">30</field>
+        <field name="margin_left">18</field>
+        <field name="margin_right">18</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">22</field>
+        <field name="dpi">90</field>
+    </record>
+    <record id="action_report_cargo_load_plan" model="ir.actions.report">
+        <field name="name">Cargo Architect Load Report</field>
+        <field name="model">cargo.architect.load.plan</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">cargo_architect.report_cargo_load_plan_document</field>
+        <field name="report_file">cargo_architect.report_cargo_load_plan_document</field>
+        <field name="print_report_name">'Cargo Architect - %s' % (object.name)</field>
+        <field name="paperformat_id" ref="cargo_architect.paperformat_cargo_load_plan_letter_standard"/>
+    </record>
+
+    <template id="report_cargo_load_plan_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <div class="page ca-load-report">
+                    <style>
+                        @page { size: Letter landscape; margin: 55mm 18mm 30mm 18mm; }
+                        .ca-load-report { font-family: Arial, Helvetica, sans-serif; color:#0f172a; font-size:8.2px; padding:0; box-sizing:border-box; width:100%; max-width:100%; overflow:hidden; }
+                        .ca-page-safe { width:100%; max-width:100%; margin:0 auto; box-sizing:border-box; overflow:hidden; padding:0; }
+                        .ca-fixed-header { background:#ffffff; border-bottom: 2px solid #0b2f6b; padding: 1mm 0 2mm 0; display: table; width: 100%; }
+                        .ca-company { display: table-cell; width: 45%; text-align: left; vertical-align: top; color:#334155; font-size:9.7px; line-height: 1.18; }
+                        .ca-load-meta { display: table-cell; width: 55%; text-align: right; vertical-align: top; color:#334155; font-size:9px; line-height:1.22; }
+                        .ca-load-name { font-size:13px; font-weight:800; color:#0b2f6b; margin-bottom:1px; }
+                        .ca-subtitle { font-size: 10px; color:#334155; line-height: 1.25; }
+                        .ca-company-logo { width: 112px; height: auto; max-height: 32px; margin-bottom: 1px; object-fit: contain; }
+                        .ca-section-title { margin: 6px 0 4px 0; padding: 4px 7px; background:#0b2f6b; color:white; font-weight:800; font-size:10px; letter-spacing:.2px; page-break-after: avoid; break-after: avoid; }
+                        .ca-summary { width: 100%; max-width:100%; border-collapse: separate; border-spacing: 6px; margin: 4px 0 8px 0; table-layout:fixed; box-sizing:border-box; }
+                        .ca-summary td { width:20%; border:1px solid #bfdbfe; border-radius:4px; background:#f8fbff; padding:8px 9px; vertical-align:top; }
+                        .ca-label { text-transform:uppercase; font-size:9px; color:#64748b; font-weight:700; }
+                        .ca-value { font-size:16px; font-weight:800; color:#0f172a; margin-top:2px; }
+                        .ca-blue { color:#0b5cad; }
+                        .ca-two-col { width:100%; border-collapse: separate; border-spacing: 8px 0; }
+                        .ca-two-col td { width:50%; vertical-align:top; }
+                        table.ca-table { width:100%; max-width:100%; border-collapse:collapse; margin-top:3px; page-break-inside: avoid; break-inside: avoid; table-layout:fixed; box-sizing:border-box; }
+                        .ca-table th { background:#dbeafe; color:#0f172a; border:1px solid #93c5fd; padding:3px 5px; font-size:8.6px; font-weight:800; }
+                        .ca-table td { border:1px solid #cbd5e1; padding:3px 5px; font-size:8.6px; vertical-align:middle; }
+                        .ca-table tr:nth-child(even) td { background:#f8fafc; }
+                        .text-end { text-align:right; }
+                        .text-center { text-align:center; }
+                        .ca-note { font-size:9px; color:#64748b; margin-top:5px; }
+                        .ca-page-break { page-break-before: always; clear: both; display:block; height:14mm; margin:0; padding:0; }
+                        .ca-soft-page-break { page-break-before: always; clear: both; display:block; height:14mm; margin:0; padding:0; }
+                        .ca-section-block { page-break-inside: avoid; break-inside: avoid; margin-bottom:6px; }
+                        .ca-section-compact { page-break-inside: avoid; break-inside: avoid; }
+                        .ca-avoid-break { page-break-inside: avoid; break-inside: avoid; }
+                        .ca-nowrap { white-space: nowrap; }
+                        .ca-compact-table th, .ca-compact-table td { font-size:9px; padding:3px 4px; }
+                        .ca-sequence-table th:nth-child(1), .ca-sequence-table td:nth-child(1) { width:45px; text-align:center; }
+                        .ca-sequence-table th:nth-child(2), .ca-sequence-table td:nth-child(2) { width:150px; }
+                        .ca-sequence-table th:nth-child(3), .ca-sequence-table td:nth-child(3) { white-space: nowrap; }
+                        .ca-qr-cell { text-align:center; vertical-align:top; }
+                        .ca-qr-box { display:inline-block; width:118px; height:118px; border:1px solid #cbd5e1; padding:5px; background:#ffffff; }
+                        .ca-qr-url { font-size:7.5px; color:#64748b; word-break: break-all; margin-top:4px; max-width:260px; }
+                        .ca-diagram-grid { width:100%; border-collapse:separate; border-spacing:8px; table-layout: fixed; }
+                        .ca-diagram-grid td { width:50%; vertical-align:top; }
+                        .ca-diagram-title { font-size:10.5px; font-weight:800; color:#0b2f6b; margin:0 0 4px 0; }
+                        .ca-diagram-box { position:relative; border:2px solid #0b5cad; background:#f8fbff; height:145px; overflow:hidden; page-break-inside:avoid; }
+                        .ca-diagram-top { height:175px; }
+                        .ca-cargo-box { position:absolute; border:1px solid #0f172a; background:#60a5fa; opacity:.86; font-size:6.5px; line-height:7px; overflow:hidden; padding:1px; color:#0f172a; box-sizing:border-box; }
+                        .ca-box-0 { background:#60a5fa; }
+                        .ca-box-1 { background:#34d399; }
+                        .ca-box-2 { background:#fbbf24; }
+                        .ca-box-3 { background:#f87171; }
+                        .ca-box-4 { background:#a78bfa; }
+                        .ca-box-5 { background:#22d3ee; }
+                        .ca-axis-label { position:absolute; right:5px; bottom:3px; font-size:8px; color:#64748b; background:rgba(248,251,255,.75); }
+                        .ca-diagram-empty { position:absolute; left:0; right:0; top:45%; text-align:center; color:#64748b; font-weight:700; }
+                        .ca-status-row { width:100%; border-collapse:separate; border-spacing:7px; margin: 6px 0 8px 0; }
+                        .ca-status-row td { border:1px solid #cbd5e1; padding:7px 8px; background:#f8fafc; text-align:center; }
+                        .ca-status-pass { color:#15803d; font-weight:800; }
+                        .ca-status-warning { color:#b45309; font-weight:800; }
+                        .ca-status-fail { color:#b91c1c; font-weight:800; }
+                        .ca-scorebar { height:8px; background:#e2e8f0; border-radius:8px; overflow:hidden; margin-top:3px; }
+                        .ca-scorebar-fill { height:8px; background:#0b5cad; border-radius:8px; }
+                        .ca-axlebar { height:10px; background:#e2e8f0; border-radius:8px; overflow:hidden; }
+                        .ca-axlebar-fill { height:10px; background:#2563eb; border-radius:8px; }
+                        .ca-heatbar { height:12px; background:#e2e8f0; border-radius:8px; overflow:hidden; min-width:100px; }
+                        .ca-heat-fill { height:12px; border-radius:8px; background:#22c55e; }
+                        .ca-heat-medium { background:#f59e0b; }
+                        .ca-heat-high { background:#ef4444; }
+                        .ca-cog-line { position:relative; height:34px; border:1px solid #93c5fd; background:#f8fbff; margin:6px 0; }
+                        .ca-cog-marker { position:absolute; top:-4px; width:2px; height:42px; background:#dc2626; }
+                        .ca-cog-marker:after { content:'COG'; position:absolute; top:-10px; left:-12px; font-size:8px; color:#dc2626; font-weight:800; }
+                        img, svg, canvas { max-width:100%; height:auto; box-sizing:border-box; }
+                        .ca-report-content, .ca-fixed-header, .ca-fixed-footer, .ca-summary, .ca-two-col, .ca-status-row, .ca-diagram-grid { max-width:100%; box-sizing:border-box; }
+                        .ca-table th, .ca-table td { overflow-wrap:anywhere; word-break:normal; }
+
+                        .ca-fixed-footer { border-top:1px solid #94a3b8; padding-top:3px; font-size:8.4px; color:#475569; display: table; width:100%; background:#ffffff; }
+                        .ca-footer-left { display: table-cell; width:38%; text-align:left; }
+                        .ca-footer-center { display: table-cell; width:24%; text-align:center; font-weight:700; color:#0b2f6b; }
+                        .ca-footer-right { display: table-cell; width:38%; text-align:right; }
+                        .ca-page-counter:after { content: counter(page); }
+                        .ca-page-total:after { content: counter(pages); }
+                    </style>
+
+                    <div class="header" style="width:100%; background:#ffffff; border-bottom:2px solid #0b2f6b; padding:2px 0 3px 0; display:table; font-family:Arial, Helvetica, sans-serif; max-height:16mm; overflow:hidden; box-sizing:border-box;">
+                        <div style="display:table-cell; width:45%; text-align:left; vertical-align:top; color:#334155; font-size:7.3px; line-height:1.0;">
+                            <img t-if="o.ca_report_option('show_company_logo') and o.branding_profile_id.logo" t-att-src="image_data_uri(o.branding_profile_id.logo)" style="width:82px; max-height:18px; height:auto; object-fit:contain; display:block; margin:0 0 1px 0;"/>
+                            <img t-if="o.ca_report_option('show_company_logo') and not o.branding_profile_id.logo and o.company_id.logo" t-att-src="image_data_uri(o.company_id.logo)" style="width:82px; max-height:18px; height:auto; object-fit:contain; display:block; margin:0 0 1px 0;"/>
+                            <div t-if="o.ca_report_option('show_company_name')" style="font-weight:700;"><span t-esc="o.company_id.name"/></div>
+                            <div t-if="o.ca_report_option('show_company_address') and o.company_id.street" t-esc="o.company_id.street"/>
+                            <div t-if="o.ca_report_option('show_company_address') and o.company_id.street2" t-esc="o.company_id.street2"/>
+                            <div t-if="o.ca_report_option('show_company_address')">
+                                <span t-if="o.company_id.city" t-esc="o.company_id.city"/>
+                                <span t-if="o.company_id.state_id">, <span t-esc="o.company_id.state_id.name"/></span>
+                                <span t-if="o.company_id.zip"> <span t-esc="o.company_id.zip"/></span>
+                            </div>
+                        </div>
+                        <div style="display:table-cell; width:55%; text-align:right; vertical-align:top; color:#334155; font-size:7.3px; line-height:1.0;">
+                            <div style="font-size:10px; font-weight:800; color:#0b2f6b; margin-bottom:1px;"><span t-esc="o.name"/></div>
+                            <div t-esc="o.trailer_preset_id.name"/>
+                            <div>Generated: <span t-esc="(o.write_date or o.create_date).strftime('%Y-%m-%d') if (o.write_date or o.create_date) else ''"/></div>
+                            <div>Cargo Architect Odoo <span t-esc="o.ca_app_version_label()"/></div>
+                        </div>
+                    </div>
+
+                    <div t-if="o.ca_report_option('show_footer')" class="footer" style="width:100%; background:#ffffff; border-top:1px solid #94a3b8; padding-top:2px; display:table; font-family:Arial, Helvetica, sans-serif; font-size:7.2px; color:#475569; max-height:8mm; overflow:hidden; box-sizing:border-box;">
+                        <div style="display:table-cell; width:38%; text-align:left;"><span t-esc="o.branding_profile_id.footer_text or 'Cargo Architect Load Report'"/></div>
+                        <div style="display:table-cell; width:24%; text-align:center; font-weight:700; color:#0b2f6b;">Page <span class="page"/> of <span class="topage"/></div>
+                        <div style="display:table-cell; width:38%; text-align:right;">Date: <span t-esc="(o.write_date or o.create_date).strftime('%Y-%m-%d') if (o.write_date or o.create_date) else ''"/> | Report <span t-esc="o.ca_app_version_label()"/></div>
+                    </div>
+
+                    <div class="ca-report-content ca-page-safe" style="padding:14mm 0 8mm 0; width:100%; max-width:100%; margin:0 auto; box-sizing:border-box; overflow:hidden; page-break-inside:auto;">
+                    <table class="ca-summary">
+                        <tr>
+                            <td><div class="ca-label">Requested</div><div class="ca-value" t-esc="o.requested_qty"/></td>
+                            <td><div class="ca-label">Loaded</div><div class="ca-value" t-esc="o.loaded_qty"/></td>
+                            <td><div class="ca-label">Total Weight</div><div class="ca-value"><span t-esc="'{:,.1f}'.format(o.total_weight_lbs or 0.0)"/> lb</div></td>
+                            <td><div class="ca-label">Load Quality</div><div class="ca-value ca-blue"><span t-esc="'{:.0f}'.format(o.load_quality_score or 0.0)"/> / 100</div></td>
+                            <td><div class="ca-label">Cube Util.</div><div class="ca-value ca-blue"><span t-esc="round(o.cube_utilization or 0.0, 1)"/>%</div></td>
+                        </tr>
+                    </table>
+
+                    <div class="ca-section-block">
+                    <div class="ca-section-title">Load Metrics</div>
+                    <table class="ca-table ca-compact-table">
+                        <tbody>
+                            <tr>
+                                <td><strong>Total Pallets</strong></td>
+                                <td class="text-end"><span t-esc="o.total_pallet_qty or 0"/></td>
+                                <td><strong>Loaded Pallets</strong></td>
+                                <td class="text-end"><span t-esc="o.loaded_pallet_qty or 0"/></td>
+                                <td><strong>Total Items</strong></td>
+                                <td class="text-end"><span t-esc="o.total_inventory_item_qty or 0"/></td>
+                                <td><strong>Loaded Items</strong></td>
+                                <td class="text-end"><span t-esc="o.loaded_inventory_item_qty or 0"/></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Items / Pallet Missing</strong></td>
+                                <td class="text-end"><span t-esc="o.lines_missing_items_per_pallet or 0"/></td>
+                                <td colspan="6"><span t-esc="o.item_quantity_summary or ''"/></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    </div>
+
+                    <div class="ca-section-block">
+                    <div class="ca-section-title">Pass / Warning / Fail Indicators</div>
+                    <table class="ca-status-row">
+                        <tr>
+                            <t t-foreach="o.get_status_indicator_rows()" t-as="status_row">
+                                <td>
+                                    <div class="ca-label"><span t-esc="status_row.get('label')"/></div>
+                                    <div t-att-class="'ca-status-pass' if status_row.get('status') == 'PASS' else ('ca-status-warning' if status_row.get('status') == 'WARNING' else 'ca-status-fail')">
+                                        <span t-esc="status_row.get('status')"/>
+                                    </div>
+                                </td>
+                            </t>
+                        </tr>
+                    </table>
+                    </div>
+
+                    <table t-if="o.ca_report_option('show_quality_score') or o.ca_report_option('show_axle_analysis')" class="ca-two-col ca-section-block">
+                        <tr>
+                            <td t-if="o.ca_report_option('show_quality_score')">
+                                <div class="ca-section-title">Load Quality Breakdown</div>
+                                <table class="ca-table">
+                                    <tbody>
+                                        <t t-foreach="o.get_quality_score_rows()" t-as="score_row">
+                                            <tr>
+                                                <td><span t-esc="score_row.get('label')"/></td>
+                                                <td class="text-end"><span t-esc="'{:.0f} / 100'.format(score_row.get('score') or 0.0)"/></td>
+                                                <td style="width:38%;">
+                                                    <div class="ca-scorebar"><div class="ca-scorebar-fill" t-att-style="'width:{:.1f}%;'.format(min(score_row.get('score') or 0.0, 100.0))"></div></div>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </td>
+                            <td t-if="o.ca_report_option('show_axle_analysis')">
+                                <div class="ca-section-title">Axle Utilization</div>
+                                <table class="ca-table">
+                                    <tbody>
+                                        <t t-foreach="o.get_axle_utilization_rows()" t-as="axle_row">
+                                            <tr>
+                                                <td><span t-esc="axle_row.get('label')"/></td>
+                                                <td class="text-end"><span t-esc="'{:.1f}%'.format(axle_row.get('percent') or 0.0)"/></td>
+                                                <td style="width:38%;"><div class="ca-axlebar"><div class="ca-axlebar-fill" t-att-style="'width:{:.1f}%;'.format(axle_row.get('bar_width') or 0.0)"></div></div></td>
+                                                <td><span t-esc="axle_row.get('status')"/></td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <div class="ca-section-block">
+                    <div class="ca-section-title">Approval Status</div>
+                    <table class="ca-table">
+                        <tbody>
+                            <tr>
+                                <td><strong>Status</strong></td>
+                                <td><span t-esc="dict(o._fields['state'].selection).get(o.state, o.state)"/></td>
+                                <td><strong>Submitted</strong></td>
+                                <td><span t-if="o.submitted_by_id" t-esc="o.submitted_by_id.name"/> <span t-if="o.submitted_date" t-esc="o.submitted_date"/></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Approved</strong></td>
+                                <td><span t-if="o.approved_by_id" t-esc="o.approved_by_id.name"/> <span t-if="o.approved_date" t-esc="o.approved_date"/></td>
+                                <td><strong>Released</strong></td>
+                                <td><span t-if="o.released_by_id" t-esc="o.released_by_id.name"/> <span t-if="o.released_date" t-esc="o.released_date"/></td>
+                            </tr>
+                            <tr t-if="o.approval_note">
+                                <td><strong>Notes</strong></td>
+                                <td colspan="3" t-esc="o.approval_note"/>
+                            </tr>
+                        </tbody>
+                    </table>
+                    </div>
+
+                    <table class="ca-two-col ca-section-block">
+                        <tr>
+                            <td>
+                                <div class="ca-section-title">Utilization</div>
+                                <table class="ca-table">
+                                    <tbody>
+                                        <tr><td>Cube Utilization</td><td class="text-end"><span t-esc="round(o.cube_utilization or 0.0, 1)"/>%</td></tr>
+                                        <tr><td>Floor Utilization</td><td class="text-end"><span t-esc="round(o.floor_utilization or 0.0, 1)"/>%</td></tr>
+                                        <tr><td>Center of Gravity</td><td class="text-end"><span t-esc="'{:,.1f} in from nose'.format(o.center_of_gravity_in or 0.0)"/></td></tr>
+                                        <tr><td>Remaining Payload</td><td class="text-end"><span t-esc="'{:,.1f} lb'.format((o.max_payload_lbs or 0.0) - (o.total_weight_lbs or 0.0))"/></td></tr>
+                                    </tbody>
+                                </table>
+                            </td>
+                            <td t-if="o.ca_report_option('show_axle_analysis')">
+                                <div class="ca-section-title">Axle Weight Estimate</div>
+                                <table class="ca-table">
+                                    <thead><tr><th>Axle Group</th><th class="text-end">Estimated</th><th class="text-end">Limit</th></tr></thead>
+                                    <tbody>
+                                        <tr><td>Steer Axle</td><td class="text-end"><span t-esc="'{:,.1f} lb'.format(o.steer_axle_lbs or 0.0)"/></td><td class="text-end">12,000 lb</td></tr>
+                                        <tr><td>Drive Axles</td><td class="text-end"><span t-esc="'{:,.1f} lb'.format(o.drive_axle_lbs or 0.0)"/></td><td class="text-end">34,000 lb</td></tr>
+                                        <tr><td>Trailer Axles</td><td class="text-end"><span t-esc="'{:,.1f} lb'.format(o.trailer_axle_lbs or 0.0)"/></td><td class="text-end">34,000 lb</td></tr>
+                                    </tbody>
+                                </table>
+                                <div class="ca-note">Planning estimates only; verify on certified scales.</div>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <t t-if="o.ca_report_option('show_engineering_analysis')">
+                    <div class="ca-section-block">
+                    <div class="ca-section-title">Engineering Analysis</div>
+                    <table class="ca-two-col">
+                        <tr>
+                            <td>
+                                <table class="ca-table">
+                                    <tbody>
+                                        <t t-foreach="o.get_engineering_analysis_rows()" t-as="eng">
+                                            <tr>
+                                                <td><span t-esc="eng.get('label')"/></td>
+                                                <td class="text-end"><span t-esc="eng.get('value')"/></td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </td>
+                            <td>
+                                <div class="ca-label">Center of Gravity Graphic</div>
+                                <div class="ca-cog-line">
+                                    <div class="ca-cog-marker" t-att-style="'left:{:.1f}%;'.format(o.get_cog_percent())"></div>
+                                </div>
+                                <div class="ca-note">COG position shown from trailer nose to rear.</div>
+                            </td>
+                        </tr>
+                    </table>
+                    </div>
+
+                    </t>
+
+                    <t t-if="o.ca_report_option('show_weight_heat_map')">
+                    <div class="ca-page-break"></div>
+                    <div class="ca-section-block">
+                    <div class="ca-section-title">Weight Heat Map - 8 Trailer Zones</div>
+                    <table class="ca-table">
+                        <thead><tr><th>Trailer Zone</th><th class="text-end">Weight</th><th>Relative Heat</th><th class="text-end">Percent</th></tr></thead>
+                        <tbody>
+                            <t t-foreach="o.get_weight_heat_map_rows()" t-as="heat">
+                                <tr>
+                                    <td><span t-esc="heat.get('label')"/></td>
+                                    <td class="text-end"><span t-esc="'{:,.1f} lb'.format(heat.get('weight_lbs') or 0.0)"/></td>
+                                    <td><div class="ca-heatbar"><div t-att-class="'ca-heat-fill ca-heat-%s' % heat.get('heat_level')" t-att-style="'width:{:.1f}%;'.format(heat.get('heat_width') or 0.0)"></div></div></td>
+                                    <td class="text-end"><span t-esc="round(heat.get('percent') or 0.0, 1)"/>%</td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                    </div>
+
+                    </t>
+
+                    <t t-if="o.ca_report_option('show_weight_distribution')">
+                    <div class="ca-section-block">
+                    <div class="ca-section-title">Trailer Weight Distribution</div>
+                    <table class="ca-table">
+                        <thead><tr><th>Trailer Zone</th><th class="text-end">Weight</th><th class="text-end">Percent</th></tr></thead>
+                        <tbody>
+                            <t t-foreach="o.get_weight_distribution_rows()" t-as="zone">
+                                <tr>
+                                    <td><span t-esc="zone.get('label')"/></td>
+                                    <td class="text-end"><span t-esc="'{:,.1f} lb'.format(zone.get('weight_lbs') or 0.0)"/></td>
+                                    <td class="text-end"><span t-esc="round(zone.get('percent') or 0.0, 1)"/>%</td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                    </div>
+                    <div class="ca-section-block">
+                    <div class="ca-section-title">Side-to-Side Balance</div>
+                    <table class="ca-table">
+                        <thead><tr><th>Trailer Side</th><th class="text-end">Weight</th><th class="text-end">Percent</th></tr></thead>
+                        <tbody>
+                            <t t-foreach="o.get_side_balance_rows()" t-as="side">
+                                <tr>
+                                    <td><span t-esc="side.get('label')"/></td>
+                                    <td class="text-end"><span t-esc="'{:,.1f} lb'.format(side.get('weight_lbs') or 0.0)"/></td>
+                                    <td class="text-end"><span t-esc="round(side.get('percent') or 0.0, 1)"/>%</td>
+                                </tr>
+                            </t>
+                            <tr>
+                                <td><strong>Status</strong></td>
+                                <td colspan="2" class="text-end"><strong><span t-esc="dict(o._fields['side_balance_status'].selection).get(o.side_balance_status or 'pass')"/></strong></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    </div>
+
+                    </t>
+
+                    <div class="ca-section-block">
+                    <div class="ca-section-title">Requested Item Quantity Rollup</div>
+                    <table class="ca-table ca-compact-table">
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th class="text-end">Pallet Qty</th>
+                                <th class="text-end">Items / Pallet</th>
+                                <th class="text-end">Total Items</th>
+                                <th class="text-end">Unit Weight</th>
+                                <th class="text-end">Total Weight</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="o.get_item_quantity_report_rows()" t-as="line_qty">
+                                <tr>
+                                    <td><span t-esc="line_qty.get('name')"/></td>
+                                    <td class="text-end"><span t-esc="line_qty.get('pallet_qty') or 0"/></td>
+                                    <td class="text-end"><span t-esc="line_qty.get('items_per_pallet') or ''"/></td>
+                                    <td class="text-end"><span t-esc="line_qty.get('total_item_qty') or ''"/></td>
+                                    <td class="text-end"><span t-esc="'{:,.1f} lb'.format(line_qty.get('weight_lbs') or 0.0)"/></td>
+                                    <td class="text-end"><span t-esc="'{:,.1f} lb'.format(line_qty.get('total_weight_lbs') or 0.0)"/></td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                    </div>
+
+                    <div class="ca-section-block">
+                    <div class="ca-section-title">Items Loaded</div>
+                    <table class="ca-table">
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th class="text-end">L</th>
+                                <th class="text-end">W</th>
+                                <th class="text-end">H</th>
+                                <th class="text-end">Pallet Qty</th>
+                                <th class="text-end">Items / Pallet</th>
+                                <th class="text-end">Total Items</th>
+                                <th class="text-end">Unit Weight</th>
+                                <th class="text-end">Total Weight</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="o.get_report_item_summary()" t-as="item">
+                                <tr>
+                                    <td><span t-esc="item.get('name')"/></td>
+                                    <td class="text-end"><span t-esc="round(item.get('length_in') or 0.0, 1)"/></td>
+                                    <td class="text-end"><span t-esc="round(item.get('width_in') or 0.0, 1)"/></td>
+                                    <td class="text-end"><span t-esc="round(item.get('height_in') or 0.0, 1)"/></td>
+                                    <td class="text-end"><span t-esc="item.get('quantity') or 0"/></td>
+                                    <td class="text-end"><span t-esc="item.get('items_per_pallet') or ''"/></td>
+                                    <td class="text-end"><span t-esc="item.get('total_item_qty') or ''"/></td>
+                                    <td class="text-end"><span t-esc="'{:,.1f} lb'.format(item.get('unit_weight_lbs') or 0.0)"/></td>
+                                    <td class="text-end"><span t-esc="'{:,.1f} lb'.format(item.get('total_weight_lbs') or 0.0)"/></td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                    </div>
+
+                    <t t-if="o.ca_report_option('show_additional_capacity')">
+                    <div class="ca-section-block">
+                    <div class="ca-section-title">Additional Capacity Analysis</div>
+                    <table class="ca-table">
+                        <thead><tr><th>Item</th><th class="text-end">Estimated Additional Qty</th><th>Limit Basis</th></tr></thead>
+                        <tbody>
+                            <t t-set="capacity_rows" t-value="o.get_capacity_analysis_rows()"/>
+                            <tr t-if="not capacity_rows"><td colspan="3">No additional capacity estimate is available for the current loaded products.</td></tr>
+                            <t t-foreach="capacity_rows" t-as="cap">
+                                <tr>
+                                    <td><span t-esc="cap.get('name')"/></td>
+                                    <td class="text-end"><span t-esc="cap.get('can_add') or 0"/></td>
+                                    <td><span t-esc="cap.get('limit')"/></td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                    </div>
+
+                    </t>
+
+
+                    <div class="ca-section-block">
+                    <div class="ca-section-title">Cargo Securement Analysis</div>
+                    <table class="ca-table">
+                        <thead><tr><th>Metric</th><th>Value</th></tr></thead>
+                        <tbody>
+                            <t t-foreach="o.get_securement_analysis_rows()" t-as="sec">
+                                <tr>
+                                    <td><span t-esc="sec.get('label')"/></td>
+                                    <td><span t-esc="sec.get('value')"/></td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                    </div>
+
+                    <t t-if="o.ca_report_option('show_business_intelligence')">
+                    <div class="ca-section-block">
+                    <div class="ca-section-title">Business Intelligence</div>
+                    <table class="ca-table">
+                        <thead><tr><th>Metric</th><th class="text-end">Value</th></tr></thead>
+                        <tbody>
+                            <t t-foreach="o.get_business_intelligence_rows()" t-as="bi">
+                                <tr>
+                                    <td><span t-esc="bi.get('label')"/></td>
+                                    <td class="text-end"><span t-esc="bi.get('value')"/></td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                    <div class="ca-section-title" style="margin-top:8px;">Trailer Evaluation Matrix</div>
+                    <table class="ca-table">
+                        <thead>
+                            <tr>
+                                <th>Trailer</th>
+                                <th class="text-end">Fit</th>
+                                <th class="text-end">Loaded</th>
+                                <th class="text-end">Empty Cube</th>
+                                <th class="text-end">Score</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="o.get_trailer_evaluation_rows()" t-as="te">
+                                <tr>
+                                    <td><span t-esc="te.get('name')"/></td>
+                                    <td class="text-end"><span t-esc="te.get('status')"/></td>
+                                    <td class="text-end"><span t-esc="'%s / %s' % (te.get('loaded_qty') or 0, te.get('requested_qty') or 0)"/></td>
+                                    <td class="text-end">
+                                        <t t-if="te.get('fits_all')"><span t-esc="'{:,.1f} ft³'.format(te.get('empty_cube_ft3') or 0.0)"/></t>
+                                        <t t-else="">N/A</t>
+                                    </td>
+                                    <td class="text-end"><span t-esc="'{:,.0f}'.format(te.get('score') or 0.0)"/></td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                    </div>
+
+                    </t>
+
+                    <t t-if="o.ca_report_option('show_loading_instructions') or o.ca_report_option('show_qr_passport')">
+                    <div class="ca-section-block">
+                    <div class="ca-section-title">Warehouse Loading Instructions</div>
+                    <table class="ca-two-col">
+                        <tr>
+                            <td t-if="o.ca_report_option('show_loading_instructions')">
+                                <div class="ca-label">Loading Instructions</div>
+                                <div class="ca-note" style="white-space: pre-line;"><span t-esc="o.loading_instructions or ''"/></div>
+                            </td>
+                            <td t-if="o.ca_report_option('show_qr_passport')">
+                                <div class="ca-label">QR Load Passport</div>
+                                <div class="ca-qr-box">
+                                    <span t-field="o.qr_load_passport_url" t-options="{'widget': 'barcode', 'symbology': 'QR', 'width': 110, 'height': 110, 'img_style': 'width:110px;height:110px;'}"/>
+                                </div>
+                                <div class="ca-note">Scan to open this load plan in Odoo.</div>
+                                <div class="ca-qr-url"><span t-esc="o.qr_load_passport_url or o._get_load_passport_url()"/></div>
+                            </td>
+                        </tr>
+                    </table>
+                    </div>
+
+                    </t>
+
+                    <t t-if="o.ca_report_option('show_load_sequence')">
+                    <div class="ca-page-break"></div>
+                    <div class="ca-section-block">
+                    <div class="ca-section-title">Load Sequence</div>
+                    <table class="ca-table ca-compact-table ca-sequence-table">
+                        <thead><tr><th>#</th><th>Item</th><th>Location</th><th t-if="o.ca_report_option('show_technical_coordinates', False)">Technical Coordinates</th></tr></thead>
+                        <tbody>
+                            <t t-foreach="o.get_load_sequence_rows()[:32]" t-as="row">
+                                <tr>
+                                    <td><span t-esc="row.get('sequence')"/></td>
+                                    <td><span t-esc="row.get('name')"/></td>
+                                    <td><span t-esc="row.get('display_position')"/></td>
+                                    <td t-if="o.ca_report_option('show_technical_coordinates', False)"><span t-esc="row.get('technical_position')"/></td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                    </div>
+
+                    </t>
+
+                    <t t-if="o.ca_report_option('show_unload_sequence')">
+                    <div class="ca-page-break"></div>
+                    <div class="ca-section-block">
+                    <div class="ca-section-title">Unload Sequence</div>
+                    <table class="ca-table ca-compact-table ca-sequence-table">
+                        <thead><tr><th>#</th><th>Item</th><th>Location</th><th t-if="o.ca_report_option('show_technical_coordinates', False)">Technical Coordinates</th></tr></thead>
+                        <tbody>
+                            <t t-foreach="o.get_unload_sequence_rows()[:32]" t-as="row">
+                                <tr>
+                                    <td><span t-esc="row.get('sequence')"/></td>
+                                    <td><span t-esc="row.get('name')"/></td>
+                                    <td><span t-esc="row.get('display_position')"/></td>
+                                    <td t-if="o.ca_report_option('show_technical_coordinates', False)"><span t-esc="row.get('technical_position')"/></td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                    </div>
+
+                    </t>
+
+                    <t t-if="o.ca_report_option('show_forklift_accessibility')">
+                    <div class="ca-page-break"></div>
+                    <div class="ca-section-block">
+                    <div class="ca-section-title">Forklift Accessibility</div>
+                    <div class="ca-note"><span t-esc="o.forklift_accessibility_status or ''"/></div>
+                    <table class="ca-table">
+                        <thead><tr><th>Item</th><th>Location</th><th t-if="o.ca_report_option('show_technical_coordinates', False)">Technical Coordinates</th><th>Status</th><th>Blocked By</th></tr></thead>
+                        <tbody>
+                            <t t-foreach="o.get_forklift_accessibility_rows()[:20]" t-as="acc">
+                                <tr>
+                                    <td><span t-esc="acc.get('name')"/></td>
+                                    <td class="ca-nowrap"><span t-esc="acc.get('position')"/></td>
+                                    <td t-if="o.ca_report_option('show_technical_coordinates', False)" class="ca-nowrap"><span t-esc="acc.get('technical_position')"/></td>
+                                    <td class="ca-nowrap"><span t-esc="acc.get('status')"/></td>
+                                    <td><span t-esc="acc.get('blocked_by')"/></td>
+                                </tr>
+                            </t>
+                            <tr t-if="len(o.get_forklift_accessibility_rows()) &gt; 20">
+                                <td t-att-colspan="5 if o.ca_report_option('show_technical_coordinates', False) else 4" class="ca-note">Additional blocked/accessibility rows are available on the load plan form.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    </div>
+
+                    </t>
+
+                    <t t-if="o.ca_report_option('show_layout_diagrams')">
+                    <div class="ca-page-break"></div>
+                    <div class="ca-section-block">
+                    <div class="ca-section-title">Layout Diagrams</div>
+                    <table class="ca-diagram-grid">
+                        <tr>
+                            <td>
+                                <div class="ca-diagram-title">Left Side View</div>
+                                <div class="ca-diagram-box">
+                                    <div t-if="not o.placement_ids" class="ca-diagram-empty">No layout diagram available. Optimize the load plan first.</div>
+                                    <t t-foreach="o.placement_ids" t-as="p">
+                                        <t t-set="left_pct" t-value="(p.x_in or 0.0) / (o.length_in or 1.0) * 100.0"/>
+                                        <t t-set="bottom_pct" t-value="(p.z_in or 0.0) / (o.height_in or 1.0) * 100.0"/>
+                                        <t t-set="width_pct" t-value="(p.length_in or 0.0) / (o.length_in or 1.0) * 100.0"/>
+                                        <t t-set="height_pct" t-value="(p.height_in or 0.0) / (o.height_in or 1.0) * 100.0"/>
+                                        <div t-att-class="'ca-cargo-box ca-box-%s' % (p_index % 6)" t-att-style="'left:{:.3f}%;bottom:{:.3f}%;width:{:.3f}%;height:{:.3f}%;'.format(left_pct, bottom_pct, width_pct, height_pct)"><span t-esc="p.name"/></div>
+                                    </t>
+                                    <div class="ca-axis-label">Length x Height</div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="ca-diagram-title">Right Side View</div>
+                                <div class="ca-diagram-box">
+                                    <div t-if="not o.placement_ids" class="ca-diagram-empty">No layout diagram available. Optimize the load plan first.</div>
+                                    <t t-foreach="o.placement_ids" t-as="p">
+                                        <t t-set="right_left_pct" t-value="((o.length_in or 0.0) - (p.x_in or 0.0) - (p.length_in or 0.0)) / (o.length_in or 1.0) * 100.0"/>
+                                        <t t-set="bottom_pct" t-value="(p.z_in or 0.0) / (o.height_in or 1.0) * 100.0"/>
+                                        <t t-set="width_pct" t-value="(p.length_in or 0.0) / (o.length_in or 1.0) * 100.0"/>
+                                        <t t-set="height_pct" t-value="(p.height_in or 0.0) / (o.height_in or 1.0) * 100.0"/>
+                                        <div t-att-class="'ca-cargo-box ca-box-%s' % (p_index % 6)" t-att-style="'left:{:.3f}%;bottom:{:.3f}%;width:{:.3f}%;height:{:.3f}%;'.format(right_left_pct, bottom_pct, width_pct, height_pct)"><span t-esc="p.name"/></div>
+                                    </t>
+                                    <div class="ca-axis-label">Length x Height</div>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                    <div class="ca-diagram-title">Top View</div>
+                    <div class="ca-diagram-box ca-diagram-top">
+                        <div t-if="not o.placement_ids" class="ca-diagram-empty">No layout diagram available. Optimize the load plan first.</div>
+                        <t t-foreach="o.placement_ids" t-as="p">
+                            <t t-set="left_pct" t-value="(p.x_in or 0.0) / (o.length_in or 1.0) * 100.0"/>
+                            <t t-set="top_pct" t-value="(p.y_in or 0.0) / (o.width_in or 1.0) * 100.0"/>
+                            <t t-set="width_pct" t-value="(p.length_in or 0.0) / (o.length_in or 1.0) * 100.0"/>
+                            <t t-set="height_pct" t-value="(p.width_in or 0.0) / (o.width_in or 1.0) * 100.0"/>
+                            <div t-att-class="'ca-cargo-box ca-box-%s' % (p_index % 6)" t-att-style="'left:{:.3f}%;top:{:.3f}%;width:{:.3f}%;height:{:.3f}%;'.format(left_pct, top_pct, width_pct, height_pct)"><span t-esc="p.name"/></div>
+                        </t>
+                        <div class="ca-axis-label">Length x Width</div>
+                    </div>
+                    </div>
+                    </t>
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+
+    <!-- v2.0.32 Report Layout Rebuild: enlarged wkhtmltopdf header/body separation, smaller repeated header/footer, top spacer after page breaks, and constrained diagram heights to prevent body/header/footer interference. -->
+</odoo>

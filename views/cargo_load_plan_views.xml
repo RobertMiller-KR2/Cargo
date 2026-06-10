@@ -1,0 +1,339 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_cargo_load_plan_list" model="ir.ui.view">
+        <field name="name">cargo.architect.load.plan.list</field>
+        <field name="model">cargo.architect.load.plan</field>
+        <field name="arch" type="xml">
+            <list decoration-success="state in ('approved', 'released', 'loaded')" decoration-info="state == 'review'" decoration-muted="state == 'draft'">
+                <field name="name"/>
+                <field name="state"/>
+                <field name="trailer_preset_id"/>
+                <field name="requested_qty"/>
+                <field name="loaded_qty"/>
+                <field name="total_inventory_item_qty"/>
+                <field name="loaded_inventory_item_qty"/>
+                <field name="total_weight_lbs"/>
+                <field name="front_half_lbs"/>
+                <field name="rear_half_lbs"/>
+                <field name="cube_utilization"/>
+                <field name="load_quality_score"/>
+                <field name="overall_status"/>
+                <field name="create_date"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_cargo_load_plan_form" model="ir.ui.view">
+        <field name="name">cargo.architect.load.plan.form</field>
+        <field name="model">cargo.architect.load.plan</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_import_from_pickings" type="object" string="Import Pickings" class="btn-secondary" invisible="state in ('approved','released','loaded')"/>
+                    <button name="action_refresh_product_dimensions" type="object" string="Refresh Product Dimensions" class="btn-secondary" invisible="state in ('approved','released','loaded')"/>
+                    <button name="action_update_all_product_presets_from_lines" type="object" string="Update Presets From Lines" class="btn-secondary" invisible="state in ('approved','released','loaded')"/>
+                    <button name="action_optimize_layout" type="object" string="Optimize Layout" class="btn-primary" invisible="state in ('approved','released','loaded')"/>
+                    <button name="action_submit_for_review" type="object" string="Submit For Review" class="btn-primary" invisible="state not in ('draft','optimized')"/>
+                    <button name="action_approve_load_plan" type="object" string="Approve Load Plan" class="btn-success" invisible="state != 'review'"/>
+                    <button name="action_release_to_warehouse" type="object" string="Release To Warehouse" class="btn-primary" invisible="state != 'approved'"/>
+                    <button name="action_mark_loaded" type="object" string="Mark Loaded" class="btn-success" invisible="state not in ('approved','released')"/>
+                    <button name="action_reset_to_draft" type="object" string="Reset To Draft" class="btn-secondary" invisible="state == 'draft'"/>
+                    <button name="action_open_planner" type="object" string="Open 3D Planner" class="btn-secondary"/>
+                    <button name="action_undo_placement_change" type="object" string="Undo" class="btn-secondary" invisible="state in ('approved','released','loaded')"/>
+                    <button name="action_redo_placement_change" type="object" string="Redo" class="btn-secondary" invisible="state in ('approved','released','loaded')"/>
+                    <button name="action_lock_all_placements" type="object" string="Lock Placements" class="btn-secondary" invisible="state in ('approved','released','loaded')"/>
+                    <button name="action_unlock_all_placements" type="object" string="Unlock All" class="btn-secondary" invisible="state in ('approved','released','loaded')"/>
+                    <button name="action_apply_best_balance_mode" type="object" string="Best Balance" class="btn-secondary" invisible="state in ('approved','released','loaded')"/>
+                    <button name="action_print_report" type="object" string="Print Load Report" class="btn-secondary"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,optimized,review,approved,released,loaded"/>
+                </header>
+                <sheet>
+                    <field name="has_unplaced_items" invisible="1"/>
+                    <field name="unplaced_warning" invisible="1"/>
+                    <field name="approval_blocker" invisible="1"/>
+                    <field name="can_approve_load" invisible="1"/>
+                    <field name="overall_status" invisible="1"/>
+                    <field name="fit_status" invisible="1"/>
+                    <field name="weight_status" invisible="1"/>
+                    <field name="axle_status" invisible="1"/>
+                    <field name="placement_undo_stack_json" invisible="1"/>
+                    <field name="placement_redo_stack_json" invisible="1"/>
+                    <div class="alert alert-warning" role="alert" invisible="not has_unplaced_items">
+                        <strong>Items Do Not Fit: </strong><field name="unplaced_warning" readonly="1" nolabel="1"/>
+                    </div>
+                    <div class="alert alert-danger" role="alert" invisible="state != 'review' or can_approve_load">
+                        <strong>Approval Blocked: </strong><field name="approval_blocker" readonly="1" nolabel="1"/>
+                    </div>
+                    <div class="alert alert-success" role="alert" invisible="state not in ('approved','released','loaded')">
+                        <strong>Approved Workflow:</strong> this load plan is locked unless reset to Draft.
+                    </div>
+                    <div class="oe_title">
+                        <h1><field name="name" placeholder="Load Plan Name"/></h1>
+                    </div>
+
+                    <group string="Quick Summary" class="o_ca_summary_top">
+                        <group>
+                            <field name="trailer_preset_id"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="picking_ids" widget="many2many_tags"/>
+                        </group>
+                        <group string="Status">
+                            <field name="requested_qty" readonly="1"/>
+                            <field name="loaded_qty" readonly="1"/>
+                            <field name="total_pallet_qty" readonly="1"/>
+                            <field name="loaded_pallet_qty" readonly="1"/>
+                            <field name="total_inventory_item_qty" readonly="1"/>
+                            <field name="loaded_inventory_item_qty" readonly="1"/>
+                            <field name="item_quantity_summary" readonly="1"/>
+                            <field name="total_weight_lbs" readonly="1"/>
+                            <field name="load_quality_score" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Items To Load">
+                            <group string="Paste Items To Load">
+                                <field name="paste_load_items_text" nolabel="1" placeholder="P001-008 (1 pallet, 24 items each)&#10;P001-010 (1 pallet, 18 each)&#10;P001-013 (4 pallets x 20)"/>
+                                <button name="action_replace_lines_from_paste" type="object" string="Replace Items From Paste" class="btn-primary" invisible="state in ('approved','released','loaded')"/>
+                            </group>
+                            <group string="Load Metrics" col="4">
+                                <field name="total_pallet_qty" readonly="1"/>
+                                <field name="loaded_pallet_qty" readonly="1"/>
+                                <field name="total_inventory_item_qty" readonly="1"/>
+                                <field name="loaded_inventory_item_qty" readonly="1"/>
+                                <field name="lines_missing_items_per_pallet" readonly="1"/>
+                                <field name="item_quantity_summary" readonly="1" colspan="4"/>
+                            </group>
+                            <field name="line_ids" mode="list,form" nolabel="1">
+                                <list editable="bottom" create="1" edit="1" delete="1" multi_edit="1" string="Load Items">
+                                    <field name="sequence" widget="handle" readonly="0"/>
+                                    <field name="product_id" readonly="0"/>
+                                    <field name="product_preset_id" readonly="0"/>
+                                    <field name="name" readonly="0" force_save="1"/>
+                                    <field name="quantity" readonly="0" force_save="1"/>
+                                    <field name="items_per_pallet" readonly="0" force_save="1"/>
+                                    <field name="total_item_qty" readonly="1"/>
+                                    <field name="length_in" readonly="0" force_save="1"/>
+                                    <field name="width_in" readonly="0" force_save="1"/>
+                                    <field name="height_in" readonly="0" force_save="1"/>
+                                    <field name="weight_lbs" readonly="0" force_save="1"/>
+                                    <field name="allow_rotate" readonly="0" force_save="1"/>
+                                    <field name="stackable" readonly="0" force_save="1"/>
+                                    <field name="max_stack" readonly="0" force_save="1"/>
+                                    <button name="action_refresh_from_product_preset" type="object" string="Refresh" class="btn-link" icon="fa-refresh"/>
+                                    <button name="action_create_update_product_preset" type="object" string="Create/Update Preset" class="btn-link" icon="fa-save"/>
+                                </list>
+                                <form string="Load Item Details">
+                                    <sheet>
+                                        <group>
+                                            <group string="Product">
+                                                <field name="product_id" readonly="0"/>
+                                                <field name="product_preset_id" readonly="0"/>
+                                                <field name="name" readonly="0" force_save="1"/>
+                                                <field name="quantity" readonly="0" force_save="1"/>
+                                                <field name="items_per_pallet" readonly="0" force_save="1"/>
+                                                <field name="total_item_qty" readonly="1"/>
+                                            </group>
+                                            <group string="Load Dimensions">
+                                                <field name="length_in" readonly="0" force_save="1"/>
+                                                <field name="width_in" readonly="0" force_save="1"/>
+                                                <field name="height_in" readonly="0" force_save="1"/>
+                                                <field name="weight_lbs" readonly="0" force_save="1"/>
+                                            </group>
+                                        </group>
+                                        <group string="Rules">
+                                            <field name="allow_rotate" readonly="0" force_save="1"/>
+                                            <field name="stackable" readonly="0" force_save="1"/>
+                                            <field name="max_stack" readonly="0" force_save="1"/>
+                                        </group>
+                                        <footer>
+                                            <button name="action_refresh_from_product_preset" type="object" string="Refresh From Preset" class="btn-secondary"/>
+                                            <button name="action_create_update_product_preset" type="object" string="Create/Update Product Preset" class="btn-primary"/>
+                                        </footer>
+                                    </sheet>
+                                </form>
+                            </field>
+                        </page>
+
+                        <page string="Dashboard">
+                            <group string="Executive Dashboard">
+                                <field name="requested_qty" readonly="1"/>
+                                <field name="loaded_qty" readonly="1"/>
+                                <field name="total_weight_lbs" readonly="1"/>
+                                <field name="cube_utilization" readonly="1"/>
+                                <field name="load_quality_score" readonly="1"/>
+                                <field name="overall_status" readonly="1"/>
+                            </group>
+                            <group string="Quality Score Breakdown">
+                                <field name="utilization_score" readonly="1"/>
+                                <field name="weight_balance_score" readonly="1"/>
+                                <field name="axle_score" readonly="1"/>
+                                <field name="stability_score" readonly="1"/>
+                                <field name="fit_status" readonly="1"/>
+                                <field name="weight_status" readonly="1"/>
+                                <field name="axle_status" readonly="1"/>
+                            </group>
+                        </page>
+
+                        <page string="Weight &amp; Engineering">
+                            <group string="Trailer Weight Distribution">
+                                <field name="front_quarter_lbs" readonly="1"/>
+                                <field name="front_mid_lbs" readonly="1"/>
+                                <field name="rear_mid_lbs" readonly="1"/>
+                                <field name="rear_quarter_lbs" readonly="1"/>
+                                <field name="front_half_lbs" readonly="1"/>
+                                <field name="rear_half_lbs" readonly="1"/>
+                            </group>
+                            <group string="Side-to-Side Balance">
+                                <field name="left_side_lbs" readonly="1"/>
+                                <field name="right_side_lbs" readonly="1"/>
+                                <field name="side_balance_delta_lbs" readonly="1"/>
+                                <field name="side_balance_score" readonly="1"/>
+                                <field name="side_balance_status" readonly="1"/>
+                            </group>
+                            <group string="Axle Weight Estimate">
+                                <field name="center_of_gravity_in" readonly="1"/>
+                                <field name="steer_axle_lbs" readonly="1"/>
+                                <field name="drive_axle_lbs" readonly="1"/>
+                                <field name="trailer_axle_lbs" readonly="1"/>
+                            </group>
+                            <group string="Engineering Analysis">
+                                <field name="free_cube_ft3" readonly="1"/>
+                                <field name="remaining_payload_lbs" readonly="1"/>
+                                <field name="floor_load_lbs_sqft" readonly="1"/>
+                                <field name="load_stability_status" readonly="1"/>
+                                <field name="capacity_summary" readonly="1"/>
+                                <field name="securement_status" readonly="1"/>
+                                <field name="cargo_shift_risk" readonly="1"/>
+                                <field name="void_space_summary" readonly="1"/>
+                                <field name="recommended_strap_count" readonly="1"/>
+                                <field name="recommended_load_bar_count" readonly="1"/>
+                                <field name="securement_reason_summary" readonly="1"/>
+                                <field name="blocking_recommendations" readonly="1" widget="text"/>
+                            </group>
+                        </page>
+
+                        <page string="Placements">
+                            <group string="Advanced Planning">
+                                <group>
+                                    <field name="optimization_mode"/>
+                                    <field name="manual_edit_summary" readonly="1"/>
+                                </group>
+                                <group>
+                                    <field name="multi_trailer_plan_summary" readonly="1"/>
+                                    <button name="action_reoptimize_around_locked" type="object" string="Re-Optimize Around Locked" class="btn-primary" invisible="state in ('approved','released','loaded')"/>
+                                </group>
+                            </group>
+                            <field name="placement_ids">
+                                <list editable="bottom">
+                                    <field name="sequence"/>
+                                    <field name="name"/>
+                                    <field name="rotated" readonly="1"/>
+                                    <field name="x_in"/>
+                                    <field name="y_in"/>
+                                    <field name="z_in"/>
+                                    <field name="length_in"/>
+                                    <field name="width_in"/>
+                                    <field name="height_in"/>
+                                    <field name="weight_lbs"/>
+                                    <field name="locked"/>
+                                    <button name="action_unlock_placement" type="object" string="Unlock" class="btn-link" invisible="not locked"/>
+                                </list>
+                            </field>
+                        </page>
+
+                        <page string="Warehouse">
+                            <group string="Warehouse Operations">
+                                <field name="forklift_accessibility_status" readonly="1"/>
+                                <field name="qr_load_passport_url" readonly="1"/>
+                            </group>
+                            <group string="Loading Instructions">
+                                <field name="loading_instructions" readonly="1" widget="text" nolabel="1"/>
+                            </group>
+                            <group>
+                                <group string="Load Sequence">
+                                    <field name="load_sequence_summary" readonly="1" widget="text" nolabel="1"/>
+                                </group>
+                                <group string="Unload Sequence">
+                                    <field name="unload_sequence_summary" readonly="1" widget="text" nolabel="1"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <page string="Business">
+                            <group string="Business Intelligence">
+                                <group>
+                                    <field name="partner_id"/>
+                                    <field name="branding_profile_id"/>
+                                    <field name="baseline_trailer_count"/>
+                                    <field name="freight_cost_per_trailer"/>
+                                    <field name="loaded_miles"/>
+                                    <field name="co2_lbs_per_mile"/>
+                                </group>
+                                <group>
+                                    <field name="optimized_trailer_count" readonly="1"/>
+                                    <field name="estimated_cost_savings" readonly="1"/>
+                                    <field name="estimated_co2_reduction_lbs" readonly="1"/>
+                                    <field name="recommended_trailer_preset_id" readonly="1"/>
+                                    <field name="trailer_selection_summary" readonly="1"/>
+                                    <field name="business_intelligence_summary" readonly="1"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <page string="Approval">
+                            <group string="Approval Workflow">
+                                <group>
+                                    <field name="submitted_by_id" readonly="1"/>
+                                    <field name="submitted_date" readonly="1"/>
+                                    <field name="approved_by_id" readonly="1"/>
+                                    <field name="approved_date" readonly="1"/>
+                                </group>
+                                <group>
+                                    <field name="released_by_id" readonly="1"/>
+                                    <field name="released_date" readonly="1"/>
+                                    <field name="loaded_by_id" readonly="1"/>
+                                    <field name="loaded_date" readonly="1"/>
+                                </group>
+                                <field name="approval_note" placeholder="Approval, release, or warehouse notes..."/>
+                            </group>
+                        </page>
+
+                        <page string="Technical JSON" groups="base.group_no_one">
+                            <field name="placement_json" readonly="1" widget="text"/>
+                            <field name="unplaced_json" readonly="1" widget="text"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="view_cargo_load_plan_graph" model="ir.ui.view">
+        <field name="name">cargo.architect.load.plan.graph</field>
+        <field name="model">cargo.architect.load.plan</field>
+        <field name="arch" type="xml">
+            <graph string="Cargo Architect KPI Dashboard" type="bar">
+                <field name="create_date" interval="month"/>
+                <field name="total_weight_lbs" type="measure"/>
+                <field name="load_quality_score" type="measure"/>
+                <field name="estimated_cost_savings" type="measure"/>
+                <field name="estimated_co2_reduction_lbs" type="measure"/>
+            </graph>
+        </field>
+    </record>
+    <record id="view_cargo_load_plan_pivot" model="ir.ui.view">
+        <field name="name">cargo.architect.load.plan.pivot</field>
+        <field name="model">cargo.architect.load.plan</field>
+        <field name="arch" type="xml">
+            <pivot string="Cargo Architect Historical KPIs">
+                <field name="create_date" interval="month" type="row"/>
+                <field name="loaded_qty" type="measure"/>
+                <field name="total_weight_lbs" type="measure"/>
+                <field name="cube_utilization" type="measure"/>
+                <field name="load_quality_score" type="measure"/>
+                <field name="estimated_cost_savings" type="measure"/>
+                <field name="estimated_co2_reduction_lbs" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+</odoo>

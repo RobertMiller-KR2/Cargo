@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_cargo_load_plan" model="ir.actions.act_window">
+        <field name="name">Load Plans</field>
+        <field name="res_model">cargo.architect.load.plan</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <record id="action_cargo_trailer_preset" model="ir.actions.act_window">
+        <field name="name">Trailer Presets</field>
+        <field name="res_model">cargo.architect.trailer.preset</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <record id="action_cargo_product_preset" model="ir.actions.act_window">
+        <field name="name">Product Presets</field>
+        <field name="res_model">cargo.architect.product.preset</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <record id="action_cargo_kpi_dashboard" model="ir.actions.act_window">
+        <field name="name">Historical KPI Dashboard</field>
+        <field name="res_model">cargo.architect.load.plan</field>
+        <field name="view_mode">graph,pivot,list,form</field>
+        <field name="context">{'group_by': ['create_date:month']}</field>
+    </record>
+    <menuitem id="menu_cargo_architect_root" name="Cargo Architect" web_icon="cargo_architect,static/description/icon.png" sequence="45"/>
+    <menuitem id="menu_cargo_architect_plans" name="Load Plans" parent="menu_cargo_architect_root" action="action_cargo_load_plan" sequence="10"/>
+    <menuitem id="menu_cargo_architect_kpis" name="KPI Dashboard" parent="menu_cargo_architect_root" action="action_cargo_kpi_dashboard" sequence="20"/>
+    <menuitem id="menu_cargo_architect_config" name="Configuration" parent="menu_cargo_architect_root" sequence="90"/>
+    <menuitem id="menu_cargo_architect_trailers" name="Trailer Presets" parent="menu_cargo_architect_config" action="action_cargo_trailer_preset" sequence="10"/>
+    <menuitem id="menu_cargo_architect_products" name="Product Presets" parent="menu_cargo_architect_config" action="action_cargo_product_preset" sequence="20"/>
+    <menuitem id="menu_cargo_architect_branding" name="Branding Profiles" parent="menu_cargo_architect_config" action="cargo_architect.action_cargo_branding_profile" sequence="30"/>
+</odoo>
