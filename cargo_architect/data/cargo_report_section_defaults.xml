@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- v2.0.40: restore full detailed reports after load-metrics changes.
+         Use set_param so upgrades are safe even when parameters already exist.
+         Header/company visibility settings are intentionally not changed. -->
+    <function model="ir.config_parameter" name="set_param">
+        <value eval="'cargo_architect.report_show_quality_score'"/>
+        <value eval="'True'"/>
+    </function>
+    <function model="ir.config_parameter" name="set_param">
+        <value eval="'cargo_architect.report_show_weight_heat_map'"/>
+        <value eval="'True'"/>
+    </function>
+    <function model="ir.config_parameter" name="set_param">
+        <value eval="'cargo_architect.report_show_weight_distribution'"/>
+        <value eval="'True'"/>
+    </function>
+    <function model="ir.config_parameter" name="set_param">
+        <value eval="'cargo_architect.report_show_axle_analysis'"/>
+        <value eval="'True'"/>
+    </function>
+    <function model="ir.config_parameter" name="set_param">
+        <value eval="'cargo_architect.report_show_engineering_analysis'"/>
+        <value eval="'True'"/>
+    </function>
+    <function model="ir.config_parameter" name="set_param">
+        <value eval="'cargo_architect.report_show_additional_capacity'"/>
+        <value eval="'True'"/>
+    </function>
+    <function model="ir.config_parameter" name="set_param">
+        <value eval="'cargo_architect.report_show_layout_diagrams'"/>
+        <value eval="'True'"/>
+    </function>
+    <function model="ir.config_parameter" name="set_param">
+        <value eval="'cargo_architect.report_show_loading_instructions'"/>
+        <value eval="'True'"/>
+    </function>
+    <function model="ir.config_parameter" name="set_param">
+        <value eval="'cargo_architect.report_show_load_sequence'"/>
+        <value eval="'True'"/>
+    </function>
+    <function model="ir.config_parameter" name="set_param">
+        <value eval="'cargo_architect.report_show_unload_sequence'"/>
+        <value eval="'True'"/>
+    </function>
+    <function model="ir.config_parameter" name="set_param">
+        <value eval="'cargo_architect.report_show_forklift_accessibility'"/>
+        <value eval="'True'"/>
+    </function>
+    <function model="ir.config_parameter" name="set_param">
+        <value eval="'cargo_architect.report_show_qr_passport'"/>
+        <value eval="'True'"/>
+    </function>
+    <function model="ir.config_parameter" name="set_param">
+        <value eval="'cargo_architect.report_show_business_intelligence'"/>
+        <value eval="'True'"/>
+    </function>
+    <function model="ir.config_parameter" name="set_param">
+        <value eval="'cargo_architect.report_show_footer'"/>
+        <value eval="'True'"/>
+    </function>
+</odoo>

@@ -1,0 +1,8 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_cargo_load_plan_user,cargo.load.plan.user,model_cargo_architect_load_plan,base.group_user,1,1,1,1
+access_cargo_load_line_user,cargo.load.line.user,model_cargo_architect_load_line,base.group_user,1,1,1,1
+access_cargo_placement_user,cargo.placement.user,model_cargo_architect_placement,base.group_user,1,1,1,1
+access_cargo_trailer_preset_user,cargo.trailer.preset.user,model_cargo_architect_trailer_preset,base.group_user,1,1,1,1
+access_cargo_product_preset_user,cargo.product.preset.user,model_cargo_architect_product_preset,base.group_user,1,1,1,1
+
+access_cargo_branding_profile_user,cargo.branding.profile.user,model_cargo_architect_branding_profile,base.group_user,1,1,1,1

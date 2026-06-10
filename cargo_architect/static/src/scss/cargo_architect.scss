@@ -1,0 +1,69 @@
+.o_cargo_architect_planner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: #eef6ff;
+  color: #0f172a;
+}
+.o_cargo_architect_header {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 12px 18px;
+  background: #bfdbfe;
+  border-bottom: 1px solid #93c5fd;
+}
+.o_cargo_architect_header img { max-height: 72px; max-width: 260px; object-fit: contain; }
+.o_cargo_architect_workspace { display: grid; grid-template-columns: 360px 1fr 300px; gap: 12px; padding: 12px; flex: 1; min-height: 0; }
+.o_cargo_architect_card { background: white; border: 1px solid #bfdbfe; border-radius: 14px; padding: 14px; overflow: auto; }
+.o_cargo_architect_canvas { width: 100%; height: 100%; min-height: 520px; background: #f8fbff; border-radius: 14px; border: 1px solid #bfdbfe; }
+.o_cargo_architect_metric { display: grid; grid-template-columns: 1fr auto; padding: 6px 0; border-bottom: 1px solid #e5e7eb; }
+
+.o_cargo_architect_view_buttons { display: flex; gap: 6px; align-items: center; }
+.o_cargo_architect_view_buttons .btn { white-space: nowrap; }
+
+.o_cargo_architect_canvas { cursor: grab; }
+.o_cargo_architect_canvas:active { cursor: grabbing; }
+.o_cargo_architect_manual_hint { margin-top: 8px; color: #475569; font-size: 13px; }
+.o_cargo_architect_selected_row { outline: 2px solid #ef4444; background: #fff7ed; }
+
+/* v2.0.22: three-view planner layout */
+.o_cargo_architect_view_note {
+  color: #334155;
+  font-size: 13px;
+  max-width: 420px;
+}
+.o_cargo_architect_workspace_three_views {
+  grid-template-columns: 280px minmax(720px, 1fr) 360px;
+}
+.o_cargo_architect_views_grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: minmax(330px, 1.05fr) minmax(300px, 0.95fr);
+  gap: 12px;
+  min-height: 0;
+}
+.o_cargo_architect_top_view_card {
+  grid-column: 1 / span 2;
+}
+.o_cargo_architect_view_card {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.o_cargo_architect_view_card h4 {
+  margin-bottom: 8px;
+}
+.o_cargo_architect_canvas_top,
+.o_cargo_architect_canvas_side {
+  flex: 1;
+  min-height: 280px;
+}
+.o_cargo_architect_canvas_top {
+  min-height: 320px;
+}
+@media (max-width: 1500px) {
+  .o_cargo_architect_workspace_three_views {
+    grid-template-columns: 240px minmax(620px, 1fr) 320px;
+  }
+}

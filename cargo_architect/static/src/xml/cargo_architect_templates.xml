@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="cargo_architect.Planner">
+        <div class="o_cargo_architect_planner">
+            <div class="o_cargo_architect_header">
+                <img src="/cargo_architect/static/src/img/cargo_architect_logo.png" alt="Cargo Architect"/>
+                <div>
+                    <h2>Cargo Architect</h2>
+                    <div t-esc="state.planName || 'Load Planner'"/>
+                </div>
+                <div class="o_cargo_architect_view_note ms-auto">
+                    Top, Left Side, and Right Side views are shown together. Click or drag inside a view to make it active.
+                </div>
+                <button class="btn btn-outline-primary" t-on-click="backToLoadPlan">Back to Load Plan</button>
+                <button class="btn btn-primary" t-on-click="optimize">Optimize Layout</button>
+                <button class="btn btn-secondary" t-on-click="reoptimizeAroundLocked">Re-optimize Around Locked</button>
+                <button class="btn btn-secondary" t-on-click="unlockAllPlacements">Unlock All</button>
+                <button class="btn btn-secondary" t-on-click="reload">Reload</button>
+            </div>
+            <t t-if="state.warning">
+                <div class="alert alert-warning o_cargo_architect_fit_warning" role="alert">
+                    <strong>Items Do Not Fit: </strong><span t-esc="state.warning"/>
+                </div>
+            </t>
+            <div class="o_cargo_architect_workspace o_cargo_architect_workspace_three_views">
+                <div class="o_cargo_architect_card o_cargo_architect_metrics_card">
+                    <h4>Load Metrics</h4>
+                    <div class="o_cargo_architect_metric"><span>Requested</span><strong t-esc="state.plan.requested_qty || 0"/></div>
+                    <div class="o_cargo_architect_metric"><span>Loaded</span><strong t-esc="state.plan.loaded_qty || 0"/></div>
+                    <div class="o_cargo_architect_metric"><span>Weight</span><strong><t t-esc="formatNumber(state.plan.total_weight_lbs || 0)"/> lb</strong></div>
+                    <div class="o_cargo_architect_metric"><span>Cube</span><strong><t t-esc="formatNumber(state.plan.cube_utilization || 0)"/>%</strong></div>
+                    <div class="o_cargo_architect_metric"><span>Quality</span><strong><t t-esc="formatNumber(state.plan.load_quality_score || 0)"/> / 100</strong></div>
+                    <h4 class="mt-3">Axles</h4>
+                    <div class="o_cargo_architect_metric"><span>Steer</span><strong><t t-esc="formatNumber(state.plan.steer_axle_lbs || 0)"/> lb</strong></div>
+                    <div class="o_cargo_architect_metric"><span>Drive</span><strong><t t-esc="formatNumber(state.plan.drive_axle_lbs || 0)"/> lb</strong></div>
+                    <div class="o_cargo_architect_metric"><span>Trailer</span><strong><t t-esc="formatNumber(state.plan.trailer_axle_lbs || 0)"/> lb</strong></div>
+                    <h4 class="mt-3">Manual Editing</h4>
+                    <div class="o_cargo_architect_metric"><span>Selected</span><strong><t t-esc="state.selectedPlacementIds.length || 0"/></strong></div>
+                    <div class="d-flex gap-1 flex-wrap mt-2">
+                        <button class="btn btn-sm btn-outline-primary" t-on-click="selectAllPlacements">Select All</button>
+                        <button class="btn btn-sm btn-outline-secondary" t-on-click="clearSelection">Clear</button>
+                        <button class="btn btn-sm btn-outline-secondary" t-on-click="snapSelectedToGrid">Snap</button>
+                    </div>
+                    <div class="d-flex gap-1 flex-wrap mt-2">
+                        <button class="btn btn-sm btn-outline-secondary" t-on-click="() => this.alignSelected('x', 'min')">Align Front</button>
+                        <button class="btn btn-sm btn-outline-secondary" t-on-click="() => this.alignSelected('x', 'center')">Align X Center</button>
+                        <button class="btn btn-sm btn-outline-secondary" t-on-click="() => this.alignSelected('x', 'max')">Align Rear</button>
+                    </div>
+                    <div class="d-flex gap-1 flex-wrap mt-2">
+                        <button class="btn btn-sm btn-outline-secondary" t-on-click="() => this.alignSelected('y', 'min')">Align Left</button>
+                        <button class="btn btn-sm btn-outline-secondary" t-on-click="() => this.alignSelected('y', 'center')">Align Centerline</button>
+                        <button class="btn btn-sm btn-outline-secondary" t-on-click="() => this.alignSelected('y', 'max')">Align Right</button>
+                    </div>
+                    <div class="d-flex gap-1 flex-wrap mt-2">
+                        <button class="btn btn-sm btn-outline-secondary" t-on-click="() => this.distributeSelected('x')">Distribute Length</button>
+                        <button class="btn btn-sm btn-outline-secondary" t-on-click="() => this.distributeSelected('y')">Distribute Width</button>
+                    </div>
+                    <div class="o_cargo_architect_manual_hint mt-3" t-esc="state.manualMessage"/>
+                </div>
+                <div class="o_cargo_architect_views_grid">
+                    <div class="o_cargo_architect_card o_cargo_architect_view_card o_cargo_architect_top_view_card">
+                        <h4>Top View</h4>
+                        <canvas class="o_cargo_architect_canvas o_cargo_architect_canvas_top" t-ref="topCanvas" t-on-mousedown="(ev) => this.onCanvasMouseDown(ev, 'top')" t-on-mousemove="(ev) => this.onCanvasMouseMove(ev, 'top')" t-on-mouseup="(ev) => this.onCanvasMouseUp(ev, 'top')" t-on-mouseleave="(ev) => this.onCanvasMouseLeave(ev, 'top')"/>
+                    </div>
+                    <div class="o_cargo_architect_card o_cargo_architect_view_card">
+                        <h4>Left Side View</h4>
+                        <canvas class="o_cargo_architect_canvas o_cargo_architect_canvas_side" t-ref="leftCanvas" t-on-mousedown="(ev) => this.onCanvasMouseDown(ev, 'left')" t-on-mousemove="(ev) => this.onCanvasMouseMove(ev, 'left')" t-on-mouseup="(ev) => this.onCanvasMouseUp(ev, 'left')" t-on-mouseleave="(ev) => this.onCanvasMouseLeave(ev, 'left')"/>
+                    </div>
+                    <div class="o_cargo_architect_card o_cargo_architect_view_card">
+                        <h4>Right Side View</h4>
+                        <canvas class="o_cargo_architect_canvas o_cargo_architect_canvas_side" t-ref="rightCanvas" t-on-mousedown="(ev) => this.onCanvasMouseDown(ev, 'right')" t-on-mousemove="(ev) => this.onCanvasMouseMove(ev, 'right')" t-on-mouseup="(ev) => this.onCanvasMouseUp(ev, 'right')" t-on-mouseleave="(ev) => this.onCanvasMouseLeave(ev, 'right')"/>
+                    </div>
+                </div>
+                <div class="o_cargo_architect_card o_cargo_architect_placements_card">
+                    <h4>Placements</h4>
+                    <t t-if="selectedPlacement">
+                        <div class="alert alert-info">
+                            <strong t-esc="selectedPlacement.name"/>
+                            <div>X <t t-esc="formatNumber(selectedPlacement.x_in)"/> | Y <t t-esc="formatNumber(selectedPlacement.y_in)"/> | Z <t t-esc="formatNumber(selectedPlacement.z_in)"/></div>
+                            <button class="btn btn-sm btn-secondary mt-1" t-on-click="toggleLockSelected">Toggle Lock</button>
+                            <button class="btn btn-sm btn-outline-secondary mt-1 ms-1" t-on-click="unlockSelected" t-if="selectedPlacement.locked">Unlock</button>
+                        </div>
+                    </t>
+                    <t t-if="state.placements.length === 0"><p>No optimized placements yet.</p></t>
+                    <t t-foreach="state.placements" t-as="p" t-key="p.id">
+                        <div t-att-class="'o_cargo_architect_metric '+(state.selectedPlacementIds.includes(p.id) ? 'o_cargo_architect_selected_row' : '')" t-on-click="(ev) => this.selectPlacement(p.id, ev.ctrlKey || ev.metaKey || ev.shiftKey)"><span><t t-esc="p.name"/> <t t-if="p.locked">🔒</t></span><strong>X <t t-esc="formatNumber(p.x_in)"/> Y <t t-esc="formatNumber(p.y_in)"/> Z <t t-esc="formatNumber(p.z_in)"/> <button t-if="p.locked" class="btn btn-sm btn-link" t-on-click.stop="() => this.unlockPlacement(p.id)">Unlock</button></strong></div>
+                    </t>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>
