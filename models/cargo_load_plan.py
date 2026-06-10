@@ -8,8 +8,8 @@ from urllib.parse import quote_plus
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError
 
-CARGO_ARCHITECT_MODULE_VERSION = '19.0.2.0.43'
-CARGO_ARCHITECT_APP_VERSION = 'v2.0.43'
+CARGO_ARCHITECT_MODULE_VERSION = '19.0.2.0.46'
+CARGO_ARCHITECT_APP_VERSION = 'v2.0.46'
 
 
 class CargoLoadPlan(models.Model):

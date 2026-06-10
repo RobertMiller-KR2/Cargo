@@ -23,13 +23,28 @@ class CargoPlacement(models.Model):
     rotated = fields.Boolean(string='Rotated', compute='_compute_rotated')
 
     def _compute_rotated(self):
+        """Show R only when this physical placement was actually rotated.
+
+        This must not mean "the product is allowed to rotate".  It only
+        means the saved placement footprint is swapped from the item's base
+        footprint.  Prefer the product preset dimensions as the base footprint
+        because line dimensions can be edited/imported, while the preset is the
+        intended product orientation.
+        """
         for placement in self:
             rotated = False
             line = placement.line_id
-            if line and placement.length_in and placement.width_in and line.length_in and line.width_in:
-                same = abs((placement.length_in or 0.0) - (line.length_in or 0.0)) <= 0.01 and abs((placement.width_in or 0.0) - (line.width_in or 0.0)) <= 0.01
-                swapped = abs((placement.length_in or 0.0) - (line.width_in or 0.0)) <= 0.01 and abs((placement.width_in or 0.0) - (line.length_in or 0.0)) <= 0.01
-                rotated = bool(swapped and not same)
+            if line and placement.length_in and placement.width_in:
+                base_length = line.product_preset_id.length_in if line.product_preset_id else line.length_in
+                base_width = line.product_preset_id.width_in if line.product_preset_id else line.width_in
+                base_length = base_length or 0.0
+                base_width = base_width or 0.0
+                placed_length = placement.length_in or 0.0
+                placed_width = placement.width_in or 0.0
+                if base_length > 0.0 and base_width > 0.0 and abs(base_length - base_width) > 0.01:
+                    same = abs(placed_length - base_length) <= 0.01 and abs(placed_width - base_width) <= 0.01
+                    swapped = abs(placed_length - base_width) <= 0.01 and abs(placed_width - base_length) <= 0.01
+                    rotated = bool(swapped and not same)
             placement.rotated = rotated
 
 
