@@ -8,8 +8,8 @@ from urllib.parse import quote_plus
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError
 
-CARGO_ARCHITECT_MODULE_VERSION = '19.0.2.0.47'
-CARGO_ARCHITECT_APP_VERSION = 'v2.0.47'
+CARGO_ARCHITECT_MODULE_VERSION = '19.0.2.0.48'
+CARGO_ARCHITECT_APP_VERSION = 'v2.0.48'
 
 
 class CargoLoadPlan(models.Model):
@@ -1892,12 +1892,19 @@ class CargoLoadPlan(models.Model):
                 h = float(line.height_in if line else sample.get('height') or 0.0)
                 if base_l <= 0.0 or base_w <= 0.0 or h <= 0.0:
                     continue
-                # Pick the orientation with the narrowest width that can fit two-across.
-                orientation_options = [(base_l, base_w), (base_w, base_l)] if abs(base_l - base_w) > 0.01 else [(base_l, base_w)]
-                pair_orients = [(l, w) for l, w in orientation_options if (2.0 * w) <= trailer_w + 0.001 and l <= trailer_l + 0.001]
+                # v2.0.48: use the base orientation for transport-block pairing
+                # whenever it can form a valid row. Only use the swapped
+                # L/W orientation if the base orientation cannot physically
+                # support the paired row. This prevents all pairable pallets
+                # from being marked rotated solely for dense packing.
+                base_pair_orients = [(base_l, base_w)] if (2.0 * base_w) <= trailer_w + 0.001 and base_l <= trailer_l + 0.001 else []
+                rotated_pair_orients = []
+                if not base_pair_orients and abs(base_l - base_w) > 0.01:
+                    rotated_pair_orients = [(base_w, base_l)] if (2.0 * base_l) <= trailer_w + 0.001 and base_w <= trailer_l + 0.001 else []
+                pair_orients = base_pair_orients or rotated_pair_orients
                 if not pair_orients:
                     continue
-                row_l, row_w = sorted(pair_orients, key=lambda lw: (lw[1], lw[0]))[0]
+                row_l, row_w = pair_orients[0]
                 stack_cap = 1
                 if bool(line.stackable) if line else True:
                     max_stack = int(line.max_stack or 0) if line else 0
@@ -2246,8 +2253,10 @@ class CargoLoadPlan(models.Model):
                 if length <= 0.0 or width <= 0.0 or height <= 0.0:
                     return
                 orientations = [(length, width)]
-                # Preserve height and allow length/width floor rotation when it produces a tighter block.
-                if abs(length - width) > 0.01:
+                # v2.0.48: preserve the saved/base orientation during dense
+                # compaction. Do not rotate merely because it creates a
+                # tighter block; rotation is reserved for true fit recovery.
+                if False and abs(length - width) > 0.01:
                     orientations.append((width, length))
                 best = None
                 xs, ys, zs = candidate_positions(placed_new)
@@ -2377,11 +2386,16 @@ class CargoLoadPlan(models.Model):
                 if base_l <= 0.0 or base_w <= 0.0 or h <= 0.0:
                     missing[item.get('name') or 'Unknown'] += 1
                     continue
-                rotations = [(base_l, base_w)]
+                # v2.0.48: recovery repack also tries the original orientation
+                # first. Rotated recovery is allowed only if no original
+                # orientation placement exists for this item in the current
+                # recovery state.
+                rotations = [(base_l, base_w, False)]
                 if abs(base_l - base_w) > 0.01:
-                    rotations.append((base_w, base_l))
-                valid = []
-                for l, w in rotations:
+                    rotations.append((base_w, base_l, True))
+                valid_base = []
+                valid_rotated = []
+                for l, w, is_rotated in rotations:
                     if l > tl + 0.001 or w > tw + 0.001 or h > th + 0.001:
                         continue
                     for z in rec_axis_points('z', h, placed_new):
@@ -3235,3 +3249,5 @@ class CargoLoadPlan(models.Model):
 
     def action_print_report(self):
         return self.env.ref('cargo_architect.action_report_cargo_load_plan').report_action(self)
+
+# v2.0.48 Minimal Rotation Enforcement: optimizer preserves base L/W orientation during dense compaction and only falls back to swapped L/W when base orientation cannot physically place the item.
