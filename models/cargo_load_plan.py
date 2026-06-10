@@ -8,8 +8,8 @@ from urllib.parse import quote_plus
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError
 
-CARGO_ARCHITECT_MODULE_VERSION = '19.0.2.0.46'
-CARGO_ARCHITECT_APP_VERSION = 'v2.0.46'
+CARGO_ARCHITECT_MODULE_VERSION = '19.0.2.0.47'
+CARGO_ARCHITECT_APP_VERSION = 'v2.0.47'
 
 
 class CargoLoadPlan(models.Model):
@@ -776,16 +776,17 @@ class CargoLoadPlan(models.Model):
             return (c['z'], width_void, level_penalty, c['x'], centerline_distance, c['y'])
 
         for item in items:
-            # v2.0.15: Always consider safe floor rotation during optimization.
-            # The height is never changed, so this honors the Cargo Architect rule
-            # that rotation may swap length/width only. Some imported lines/presets
-            # were arriving with allow_rotate unchecked, which prevented pairable
-            # cartons such as P001-010 from using two-across rows.
-            rotations = [(item['length'], item['width'])]
-            if abs(item['length'] - item['width']) > 0.01:
-                rotations.append((item['width'], item['length']))
-            valid = []
-            for l, w in rotations:
+            # v2.0.47: Rotation is now a fallback, not a preference.
+            # Always try the base footprint first. Only use the swapped L/W
+            # orientation when the base orientation has no valid physical
+            # placement. This prevents rotating items merely because they are
+            # allowed to rotate.
+            rotations = [(item['length'], item['width'], False)]
+            if item.get('allow_rotate', True) and abs(item['length'] - item['width']) > 0.01:
+                rotations.append((item['width'], item['length'], True))
+            valid_base = []
+            valid_rotated = []
+            for l, w, is_rotated in rotations:
                 h = item['height']
                 if l <= 0.0 or w <= 0.0 or h <= 0.0 or l > length_in + 0.001 or w > width_in + 0.001 or h > height_in + 0.001:
                     continue
@@ -806,7 +807,11 @@ class CargoLoadPlan(models.Model):
                                 continue
                             if any(intersects(c, p) for p in placements):
                                 continue
-                            valid.append(c)
+                            if is_rotated:
+                                valid_rotated.append(c)
+                            else:
+                                valid_base.append(c)
+            valid = valid_base or valid_rotated
             if not valid:
                 continue
             placements.append(sorted(valid, key=option_score)[0])
@@ -1675,23 +1680,23 @@ class CargoLoadPlan(models.Model):
             return support >= footprint * 0.55
 
         for item in items:
-            # v2.0.15: Always consider safe floor rotation during optimization.
-            # The height is never changed, so this honors the Cargo Architect rule
-            # that rotation may swap length/width only. Some imported lines/presets
-            # were arriving with allow_rotate unchecked, which prevented pairable
-            # cartons such as P001-010 from using two-across rows.
-            rotations = [(item['length'], item['width'])]
-            if abs(item['length'] - item['width']) > 0.01:
-                rotations.append((item['width'], item['length']))
+            # v2.0.47: Do not rotate just because rotation is allowed.
+            # The base footprint is always attempted first. The rotated footprint
+            # is only considered if no valid unrotated placement exists for this
+            # item in the current free-space state. Height is never changed.
+            rotations = [(item['length'], item['width'], False)]
+            if item.get('allow_rotate', True) and abs(item['length'] - item['width']) > 0.01:
+                rotations.append((item['width'], item['length'], True))
             placed = None
             # Gather valid placements first. In Best Weight Balance mode, score
             # each candidate by both front/rear and left/right weight balance.
             # This prevents heavier SKUs from being concentrated on one side
             # when rotation/side-by-side placement is available.
             candidates = sorted(free, key=lambda s: (s[2], s[0], s[1], s[3] * s[4] * s[5]))
-            valid_options = []
+            valid_base_options = []
+            valid_rotated_options = []
             for sx, sy, sz, sl, sw, sh in candidates:
-                for length, width in rotations:
+                for length, width, is_rotated in rotations:
                     if length <= sl + 0.001 and width <= sw + 0.001 and item['height'] <= sh + 0.001:
                         # v2.0.6: evaluate multiple width-lane positions inside
                         # each free space. Previous builds only tested sy, so
@@ -1723,7 +1728,11 @@ class CargoLoadPlan(models.Model):
                                 continue
                             if any(intersects(candidate, p) for p in placements):
                                 continue
-                            valid_options.append(candidate)
+                            if is_rotated:
+                                valid_rotated_options.append(candidate)
+                            else:
+                                valid_base_options.append(candidate)
+            valid_options = valid_base_options or valid_rotated_options
             if valid_options:
                 def balance_option_score(candidate):
                     front = rear = left = right = 0.0
@@ -1798,7 +1807,7 @@ class CargoLoadPlan(models.Model):
                     # movement during transport. Edge-started, two-across rows
                     # reduce void space and create better lateral blocking.
                     pairable_two_across = False
-                    for _rot_l, rot_w in rotations:
+                    for _rot_l, rot_w, _is_rotated in rotations:
                         if trailer_width and rot_w <= (trailer_width / 2.0) + 0.001:
                             pairable_two_across = True
                             break

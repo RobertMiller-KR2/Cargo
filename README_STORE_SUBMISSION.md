@@ -1,6 +1,6 @@
 # Cargo Architect Odoo Apps Store Submission Notes
 
-Version: 19.0.2.0.46 / v2.0.46
+Version: 19.0.2.0.47 / v2.0.47
 Publisher: KR Squared, Inc.
 Website: https://cargoarchitect.kr2inc.com/
 Support: cargoarchitect@kr2inc.com
